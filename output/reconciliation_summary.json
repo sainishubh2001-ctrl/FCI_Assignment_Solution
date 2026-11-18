@@ -1,0 +1,415 @@
+{
+  "source": "bank_a",
+  "dedup_key": [
+    "account_number",
+    "txn_date",
+    "txn_time",
+    "ref_no",
+    "direction",
+    "amount"
+  ],
+  "totals": {
+    "files_loaded": 3,
+    "rows_read": 555,
+    "rows_loaded": 361,
+    "rows_quarantined": 6,
+    "distinct_quarantined_records": 3,
+    "duplicates_removed": 188,
+    "duplicates_within_file": 8,
+    "duplicates_already_loaded": 180
+  },
+  "files": [
+    {
+      "file": "batch_2026-08-01.csv",
+      "sha256": "365bdfbaad946cef79b5168fb8874843d0c4c1abfeee7797d660d005fce15f6a",
+      "batch_date": "2026-08-01",
+      "rows_read": 187,
+      "rows_loaded": 180,
+      "rows_quarantined": 3,
+      "quarantined_by_reason": {
+        "BOTH_DEBIT_AND_CREDIT": 1,
+        "MISSING_REF_NO": 1,
+        "NO_DEBIT_OR_CREDIT": 1
+      },
+      "duplicates_within_file": 4,
+      "duplicates_already_loaded": 0,
+      "rows_loaded_as_backfill": 0,
+      "late_dated_rows": {
+        "already_loaded": 0,
+        "new": 0,
+        "rows": 0,
+        "within_file_repeats": 0
+      }
+    },
+    {
+      "file": "batch_2026-08-02.csv",
+      "sha256": "22ad0e8207708cc18836728ba7b90953da36019b1b3e16e392cead2d8a74ad26",
+      "batch_date": "2026-08-02",
+      "rows_read": 365,
+      "rows_loaded": 178,
+      "rows_quarantined": 3,
+      "quarantined_by_reason": {
+        "BOTH_DEBIT_AND_CREDIT": 1,
+        "MISSING_REF_NO": 1,
+        "NO_DEBIT_OR_CREDIT": 1
+      },
+      "duplicates_within_file": 4,
+      "duplicates_already_loaded": 180,
+      "rows_loaded_as_backfill": 0,
+      "late_dated_rows": {
+        "already_loaded": 180,
+        "new": 0,
+        "rows": 184,
+        "within_file_repeats": 4
+      }
+    },
+    {
+      "file": "batch_2026-08-04_late_correction.csv",
+      "sha256": "a5ca12df5c9f7731c1e5a910e9fead28bba0e884964fc3d1c0478c15390171c9",
+      "batch_date": "2026-08-04",
+      "rows_read": 3,
+      "rows_loaded": 3,
+      "rows_quarantined": 0,
+      "quarantined_by_reason": {},
+      "duplicates_within_file": 0,
+      "duplicates_already_loaded": 0,
+      "rows_loaded_as_backfill": 3,
+      "late_dated_rows": {
+        "already_loaded": 0,
+        "new": 3,
+        "rows": 3,
+        "within_file_repeats": 0
+      }
+    }
+  ],
+  "quarantine_by_reason": [
+    {
+      "reason_code": "BOTH_DEBIT_AND_CREDIT",
+      "rows": 2,
+      "distinct_records": 1
+    },
+    {
+      "reason_code": "MISSING_REF_NO",
+      "rows": 2,
+      "distinct_records": 1
+    },
+    {
+      "reason_code": "NO_DEBIT_OR_CREDIT",
+      "rows": 2,
+      "distinct_records": 1
+    }
+  ],
+  "backfill": [
+    {
+      "file": "batch_2026-08-04_late_correction.csv",
+      "batch_date": "2026-08-04",
+      "late_dated_rows": {
+        "already_loaded": 0,
+        "new": 3,
+        "rows": 3,
+        "within_file_repeats": 0
+      },
+      "by_account": [
+        {
+          "account_number": "AC100000002",
+          "credit_total": "0.00",
+          "debit_total": "18500.00",
+          "net": "-18500.00",
+          "rows": 1
+        },
+        {
+          "account_number": "AC100000005",
+          "credit_total": "15000.00",
+          "debit_total": "0.00",
+          "net": "15000.00",
+          "rows": 1
+        },
+        {
+          "account_number": "AC100000009",
+          "credit_total": "82000.00",
+          "debit_total": "0.00",
+          "net": "82000.00",
+          "rows": 1
+        }
+      ],
+      "credit_total": "97000.00",
+      "debit_total": "18500.00",
+      "net": "78500.00",
+      "partitions": [
+        {
+          "after": {
+            "credit_total": "2012422.42",
+            "debit_total": "3321028.75",
+            "net": "-1308606.33",
+            "rows": 183
+          },
+          "before": {
+            "credit_total": "1915422.42",
+            "debit_total": "3302528.75",
+            "net": "-1387106.33",
+            "rows": 180
+          },
+          "days_late": 3,
+          "delta": {
+            "credit_total": "97000.00",
+            "debit_total": "18500.00",
+            "net": "78500.00",
+            "rows": 3
+          },
+          "txn_date": "2026-08-01"
+        }
+      ],
+      "rows": 3
+    }
+  ],
+  "canonical": {
+    "rows": 361,
+    "by_txn_date": [
+      {
+        "txn_date": "2026-08-01",
+        "rows": 183,
+        "regular_rows": 180,
+        "backfill_rows": 3,
+        "debit_total": "3321028.75",
+        "credit_total": "2012422.42",
+        "net": "-1308606.33"
+      },
+      {
+        "txn_date": "2026-08-02",
+        "rows": 178,
+        "regular_rows": 178,
+        "backfill_rows": 0,
+        "debit_total": "3390381.64",
+        "credit_total": "2099315.74",
+        "net": "-1291065.90"
+      }
+    ]
+  },
+  "data_quality_warnings": {
+    "account_type_drift": {
+      "accounts_with_multiple_types": 25,
+      "accounts_total": 40,
+      "accounts": [
+        {
+          "account_number": "AC100000002",
+          "account_types": [
+            "SALARY",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000005",
+          "account_types": [
+            "SALARY",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000006",
+          "account_types": [
+            "CURRENT",
+            "SALARY"
+          ]
+        },
+        {
+          "account_number": "AC100000007",
+          "account_types": [
+            "SALARY",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000009",
+          "account_types": [
+            "CURRENT",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000011",
+          "account_types": [
+            "CURRENT",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000013",
+          "account_types": [
+            "CURRENT",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000015",
+          "account_types": [
+            "CURRENT",
+            "SALARY"
+          ]
+        },
+        {
+          "account_number": "AC100000016",
+          "account_types": [
+            "CURRENT",
+            "SALARY"
+          ]
+        },
+        {
+          "account_number": "AC100000017",
+          "account_types": [
+            "CURRENT",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000019",
+          "account_types": [
+            "CURRENT",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000020",
+          "account_types": [
+            "CURRENT",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000022",
+          "account_types": [
+            "CURRENT",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000024",
+          "account_types": [
+            "SALARY",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000025",
+          "account_types": [
+            "CURRENT",
+            "SALARY"
+          ]
+        },
+        {
+          "account_number": "AC100000026",
+          "account_types": [
+            "CURRENT",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000027",
+          "account_types": [
+            "CURRENT",
+            "SALARY"
+          ]
+        },
+        {
+          "account_number": "AC100000028",
+          "account_types": [
+            "SALARY",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000029",
+          "account_types": [
+            "CURRENT",
+            "SALARY"
+          ]
+        },
+        {
+          "account_number": "AC100000030",
+          "account_types": [
+            "CURRENT",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000031",
+          "account_types": [
+            "SALARY",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000032",
+          "account_types": [
+            "CURRENT",
+            "SALARY"
+          ]
+        },
+        {
+          "account_number": "AC100000033",
+          "account_types": [
+            "CURRENT",
+            "SALARY"
+          ]
+        },
+        {
+          "account_number": "AC100000035",
+          "account_types": [
+            "CURRENT",
+            "SAVINGS"
+          ]
+        },
+        {
+          "account_number": "AC100000037",
+          "account_types": [
+            "CURRENT",
+            "SALARY"
+          ]
+        }
+      ],
+      "action": "account_type is excluded from the dedup key; values are kept as delivered"
+    },
+    "same_ref_no_on_different_transactions": {
+      "count": 0,
+      "transactions": [],
+      "action": "both rows are loaded because their keys differ; review for a possible amendment"
+    }
+  },
+  "control_checks": [
+    {
+      "name": "Every file: rows read = loaded + quarantined + duplicates removed",
+      "passed": true,
+      "detail": "3 file(s) balance"
+    },
+    {
+      "name": "Ledger counters match the rows physically stored for each file",
+      "passed": true,
+      "detail": "loaded, quarantined and duplicate rows all present"
+    },
+    {
+      "name": "Canonical row count = rows loaded across all files",
+      "passed": true,
+      "detail": "361 rows"
+    },
+    {
+      "name": "Control totals: canonical debits and credits = totals loaded per file",
+      "passed": true,
+      "detail": "debits 6711410.39, credits 4111738.16"
+    },
+    {
+      "name": "Backfilled rows landed in their own business-date partitions",
+      "passed": true,
+      "detail": "3 backfilled row(s)"
+    },
+    {
+      "name": "No transaction id appears twice in the canonical dataset",
+      "passed": true,
+      "detail": "unique"
+    },
+    {
+      "name": "Every canonical amount is positive and has a direction",
+      "passed": true,
+      "detail": "all positive"
+    }
+  ],
+  "all_checks_passed": true
+}
