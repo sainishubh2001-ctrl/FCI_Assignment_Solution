@@ -104,6 +104,16 @@ class TestRowsWithoutAReference:
         assert quarantine["reason_code"].tolist() == ["MISSING_REF_NO", "MISSING_REF_NO"]
         assert len(ws.table("duplicates_removed.csv")) == 0
 
+    def test_ref_no_can_be_made_optional_by_config_without_merging_distinct_rows(self, ws, cfg):
+        optional = dataclasses.replace(cfg, required_fields=("account_number",))
+        ws.add("batch_2026-08-01.csv", [make_row(ref="", debit="10"), make_row(ref="", debit="20")])
+        ws.add("batch_2026-08-02.csv", [make_row(ref="", debit="10", date="1/08/2026")])
+        ws.run(cfg=optional)
+
+        assert sorted(ws.table("canonical_transactions.csv")["amount"]) == ["10.00", "20.00"]
+        assert len(ws.table("quarantine.csv")) == 0
+        assert len(ws.table("duplicates_removed.csv")) == 1
+
 
 class TestKeyIsConfigurable:
     def test_a_different_key_changes_what_counts_as_a_duplicate(self, ws, cfg):
