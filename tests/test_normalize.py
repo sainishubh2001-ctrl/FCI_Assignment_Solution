@@ -5,7 +5,14 @@ from decimal import Decimal
 
 import pytest
 
-from txn_pipeline.normalize import clean_id, clean_text, fmt_amount, parse_date, parse_decimal, parse_time
+from txn_pipeline.normalize import (
+    clean_id,
+    clean_text,
+    fmt_amount,
+    parse_date,
+    parse_decimal,
+    parse_time,
+)
 
 DATE_FORMATS = ("%d-%m-%Y", "%d/%m/%Y")
 TIME_FORMATS = ("%H:%M:%S", "%H:%M")

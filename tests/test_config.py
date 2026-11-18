@@ -4,9 +4,9 @@ import copy
 
 import pytest
 import yaml
+from conftest import BANK_A_CONFIG
 
 from txn_pipeline.config import ConfigError, load_config, parse_config
-from conftest import BANK_A_CONFIG
 
 
 @pytest.fixture

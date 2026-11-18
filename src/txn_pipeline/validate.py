@@ -8,7 +8,14 @@ import pandas as pd
 
 from .config import INPUT_FIELDS, SourceConfig
 from .extract import RawRecord
-from .normalize import clean_id, clean_text, fmt_amount, parse_date, parse_decimal, parse_time
+from .normalize import (
+    clean_id,
+    clean_text,
+    fmt_amount,
+    parse_date,
+    parse_decimal,
+    parse_time,
+)
 
 MALFORMED_ROW = "MALFORMED_ROW"
 INVALID_DATE = "INVALID_DATE"

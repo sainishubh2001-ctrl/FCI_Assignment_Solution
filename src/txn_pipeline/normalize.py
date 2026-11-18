@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime, time
-from functools import lru_cache
 from decimal import Decimal, InvalidOperation
+from functools import lru_cache
 from typing import Sequence
 
 _NUMBER = re.compile(r"[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)")
