@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from helpers import Workspace
 
 from txn_pipeline.config import SourceConfig, load_config
 
@@ -14,3 +15,8 @@ BANK_A_CONFIG = REPO / "config" / "bank_a.yaml"
 @pytest.fixture(scope="session")
 def cfg() -> SourceConfig:
     return load_config(BANK_A_CONFIG)
+
+
+@pytest.fixture
+def ws(tmp_path, cfg) -> Workspace:
+    return Workspace(tmp_path, cfg)
