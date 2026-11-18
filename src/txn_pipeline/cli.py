@@ -71,8 +71,9 @@ def summary_lines(report: dict, output: Path) -> list[str]:
     ]
     for b in report["backfill"]:
         dates = ", ".join(p["txn_date"] for p in b["partitions"])
+        noun = "row" if b["rows"] == 1 else "rows"
         lines.append(
-            f"Backfill: {b['file']} added {b['rows']} rows to {dates} "
+            f"Backfill: {b['file']} added {b['rows']} {noun} to {dates} "
             f"(credits {format(Decimal(b['credit_total']), '+,f')}, debits {format(Decimal(b['debit_total']), '+,f')})"
         )
     lines.append(f"Outputs in {output}{os.sep}: canonical_transactions.csv, quarantine.csv, duplicates_removed.csv, reconciliation_summary.json/.md")

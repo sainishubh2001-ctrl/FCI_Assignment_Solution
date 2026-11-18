@@ -65,9 +65,9 @@ def run(cfg: SourceConfig, input_dir: Path, output_dir: Path, state_dir: Path, r
 def process_file(path: Path, cfg: SourceConfig, store: Store) -> FileOutcome:
     data = path.read_bytes()
     sha = sha256_of(data)
-    earlier_name = store.batch_file(sha)
-    if earlier_name is not None:
-        return FileOutcome(path.name, sha, SKIPPED, f"identical content already loaded as {earlier_name}")
+    earlier = _already_loaded(store, sha, path.name, cfg)
+    if earlier is not None:
+        return earlier
 
     try:
         raw = read_raw_file(path.name, data, cfg)
@@ -79,8 +79,9 @@ def process_file(path: Path, cfg: SourceConfig, store: Store) -> FileOutcome:
     valid = add_txn_ids(valid, cfg)
 
     with store.transaction():
-        if store.batch_file(sha) is not None:
-            return FileOutcome(path.name, sha, SKIPPED, "identical content already loaded")
+        earlier = _already_loaded(store, sha, path.name, cfg)
+        if earlier is not None:
+            return earlier
 
         existing = store.existing_ids(valid["txn_id"].unique().tolist())
         new, within_file, already_loaded = split_batch(valid, existing)
@@ -140,6 +141,17 @@ def process_file(path: Path, cfg: SourceConfig, store: Store) -> FileOutcome:
             }
         )
     return FileOutcome(path.name, sha, LOADED, counts={**counts, "rows_backfill": len(backfill_rows)})
+
+
+def _already_loaded(store: Store, sha: str, name: str, cfg: SourceConfig) -> FileOutcome | None:
+    owner = store.batch_owner(sha)
+    if owner is None:
+        return None
+    source, earlier_name = owner
+    if source != cfg.name:
+        message = f"identical bytes were already loaded for source '{source}' as {earlier_name}; refusing to load them as '{cfg.name}'"
+        return FileOutcome(name, sha, FAILED, message)
+    return FileOutcome(name, sha, SKIPPED, f"identical content already loaded as {earlier_name}")
 
 
 def late_mask(frame: pd.DataFrame, batch_date: date | None, threshold_days: int) -> pd.Series:

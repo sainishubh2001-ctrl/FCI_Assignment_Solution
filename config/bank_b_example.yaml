@@ -1,0 +1,41 @@
+# Example of onboarding a second source bank with configuration only (no code change).
+#
+#   python run_pipeline.py --config config/bank_b_example.yaml --input sample_data/bank_b_example \
+#                          --output output_bank_b --state state_bank_b
+#
+# Compared with Bank A: semicolon-delimited, different headers, ISO dates, thousands separators,
+# no time-of-day column (so the dedup key has no time), and a different file-name pattern.
+
+source:
+  name: bank_b
+  file_glob: "bankb_*.csv"
+  encoding: utf-8
+  delimiter: ";"
+  batch_date_regex: 'bankb_(\d{8})'
+  batch_date_format: "%Y%m%d"
+
+columns:
+  account_number: AcctNo
+  txn_date: PostingDate
+  txn_time: null
+  description: Narration
+  ref_no: UTR
+  debit: Withdrawal
+  credit: Deposit
+  balance: ClosingBal
+  account_type: Product
+
+formats:
+  date: ["%Y-%m-%d"]
+  decimal_places: 2
+  decimal_separator: "."
+  thousands_separator: ","
+
+validation:
+  required: [account_number, ref_no]
+
+dedup:
+  key: [account_number, txn_date, ref_no, direction, amount]
+
+backfill:
+  late_after_days: 1

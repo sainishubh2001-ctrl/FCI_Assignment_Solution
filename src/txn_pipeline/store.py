@@ -165,9 +165,12 @@ class Store:
         else:
             self.conn.execute("COMMIT")
 
-    def batch_file(self, sha256: str) -> str | None:
-        row = self.conn.execute("SELECT batch_file FROM batches WHERE batch_sha256 = ?", (sha256,)).fetchone()
-        return None if row is None else row[0]
+    def batch_owner(self, sha256: str) -> tuple[str, str] | None:
+        """(source, file name) of an already-loaded file with these exact bytes."""
+        row = self.conn.execute(
+            "SELECT source, batch_file FROM batches WHERE batch_sha256 = ?", (sha256,)
+        ).fetchone()
+        return None if row is None else (row[0], row[1])
 
     def next_seq(self) -> int:
         return int(self.conn.execute("SELECT COALESCE(MAX(seq), 0) + 1 FROM batches").fetchone()[0])
