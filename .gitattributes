@@ -1,0 +1,6 @@
+* text=auto
+
+# Delivered files and generated outputs must stay byte-for-byte as written (no EOL conversion):
+# the ingestion ledger identifies a file by the SHA-256 of its bytes.
+sample_data/** -text
+output/** -text

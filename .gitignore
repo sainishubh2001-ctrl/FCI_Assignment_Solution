@@ -1,0 +1,16 @@
+# Python / tooling
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# Pipeline state (SQLite ledger + canonical store) is rebuilt from the input files
+state/
+state_*/
+
+# The assignment brief and the files exactly as downloaded stay outside the repo;
+# the tracked copies live under sample_data/assignment-1-pipeline/
+/*.docx
+/batch_*.csv
+/NOTES.txt
