@@ -1,10 +1,10 @@
-# Example of onboarding a second source bank with configuration only (no code change).
+# A second bank onboarded with configuration only:
 #
 #   python run_pipeline.py --config config/bank_b_example.yaml --input sample_data/bank_b_example \
 #                          --output output_bank_b --state state_bank_b
 #
-# Compared with Bank A: semicolon-delimited, different headers, ISO dates, thousands separators,
-# no time-of-day column (so the dedup key has no time), and a different file-name pattern.
+# Semicolon-separated, different headers, ISO dates, thousands separators, no time column
+# (so the key has no time) and a different file name pattern.
 
 source:
   name: bank_b

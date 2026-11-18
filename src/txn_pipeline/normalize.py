@@ -6,13 +6,12 @@ from decimal import Decimal, InvalidOperation
 from functools import lru_cache
 from typing import Sequence
 
+# plain digits only: Decimal() would also accept "1e5", "1_000" and non-ASCII digits
 _NUMBER = re.compile(r"[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)")
 
 
 def clean_text(value: str | None) -> str | None:
-    if value is None:
-        return None
-    text = " ".join(str(value).split())
+    text = " ".join(str(value).split()) if value is not None else ""
     return text or None
 
 
@@ -21,69 +20,48 @@ def clean_id(value: str | None) -> str | None:
     return text.upper() if text else None
 
 
-def parse_date(value: str | None, formats: Sequence[str], min_year: int, max_year: int) -> date:
+@lru_cache(maxsize=100_000)
+def _parse_datetime(text: str, formats: tuple[str, ...]) -> datetime:
+    for fmt in formats:
+        try:
+            return datetime.strptime(text, fmt)
+        except ValueError:
+            pass
+    raise ValueError(f"{text!r} is not a valid value for {list(formats)}")
+
+
+def _required(value: str | None) -> str:
     text = clean_text(value)
     if text is None:
-        raise ValueError("date is blank")
-    return _parse_date(text, tuple(formats), min_year, max_year)
+        raise ValueError("is blank")
+    return text
+
+
+def parse_date(value: str | None, formats: Sequence[str]) -> date:
+    return _parse_datetime(_required(value), tuple(formats)).date()
 
 
 def parse_time(value: str | None, formats: Sequence[str]) -> time:
-    text = clean_text(value)
-    if text is None:
-        raise ValueError("time is blank")
-    return _parse_time(text, tuple(formats))
-
-
-@lru_cache(maxsize=8192)
-def _parse_date(text: str, formats: tuple[str, ...], min_year: int, max_year: int) -> date:
-    for fmt in formats:
-        try:
-            parsed = datetime.strptime(text, fmt).date()
-        except ValueError:
-            continue
-        if not min_year <= parsed.year <= max_year:
-            raise ValueError(f"{text!r} has year {parsed.year}, outside {min_year}-{max_year}")
-        return parsed
-    raise ValueError(f"{text!r} is not a real date in any of {list(formats)}")
-
-
-@lru_cache(maxsize=8192)
-def _parse_time(text: str, formats: tuple[str, ...]) -> time:
-    for fmt in formats:
-        try:
-            return datetime.strptime(text, fmt).time()
-        except ValueError:
-            continue
-    raise ValueError(f"{text!r} does not match any of {list(formats)}")
+    return _parse_datetime(_required(value), tuple(formats)).time()
 
 
 def parse_decimal(
-    value: str | None,
-    places: int = 2,
-    decimal_separator: str = ".",
-    thousands_separator: str | None = None,
+    value: str | None, places: int = 2, decimal_separator: str = ".", thousands_separator: str | None = None
 ) -> Decimal | None:
-    """Exact decimal from text; blank -> None. Never goes through float and never rounds."""
+    """Exact decimal, never via float. Blank gives None; extra precision is an error, not a rounding."""
     text = clean_text(value)
     if text is None:
         return None
     if thousands_separator:
         text = text.replace(thousands_separator, "")
-    if decimal_separator != ".":
-        text = text.replace(decimal_separator, ".")
+    text = text.replace(decimal_separator, ".")
     if not _NUMBER.fullmatch(text):
-        raise ValueError(f"{value!r} is not a plain decimal number")
+        raise ValueError(f"{value!r} is not a plain number")
     number = Decimal(text)
-    quantum = Decimal(1).scaleb(-places)
     try:
-        rounded = number.quantize(quantum)
-    except InvalidOperation as exc:
-        raise ValueError(f"{value!r} is too large") from exc
-    if rounded != number:
+        exact = number.quantize(Decimal(1).scaleb(-places))
+    except InvalidOperation:
+        raise ValueError(f"{value!r} is too large") from None
+    if exact != number:
         raise ValueError(f"{value!r} has more than {places} decimal places")
-    return rounded
-
-
-def fmt_amount(value: Decimal | None) -> str | None:
-    return None if value is None else format(value, "f")
+    return exact

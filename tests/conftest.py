@@ -9,9 +9,9 @@ from txn_pipeline.config import SourceConfig, load_config
 
 REPO = Path(__file__).resolve().parents[1]
 SAMPLE_DIR = REPO / "sample_data" / "assignment-1-pipeline"
+BANK_B_DIR = REPO / "sample_data" / "bank_b_example"
 BANK_A_CONFIG = REPO / "config" / "bank_a.yaml"
 BANK_B_CONFIG = REPO / "config" / "bank_b_example.yaml"
-BANK_B_SAMPLE_DIR = REPO / "sample_data" / "bank_b_example"
 
 
 @pytest.fixture(scope="session")

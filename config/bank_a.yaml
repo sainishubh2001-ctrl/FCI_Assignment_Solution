@@ -1,18 +1,16 @@
-# Source configuration for "Bank A" (the sample feed).
-# Everything that differs between banks lives in a file like this one:
-# onboarding another bank is a new YAML file, not a code change (see config/bank_b_example.yaml).
+# Everything that differs between banks lives in a file like this one.
+# A second bank is a new YAML file, not a code change (see bank_b_example.yaml).
 
 source:
   name: bank_a
   file_glob: "batch_*.csv"
   encoding: utf-8
   delimiter: ","
-  # Date embedded in the file name. Used to process files in arrival order and to
-  # decide whether a row arrived late (backfill).
+  # the date in the file name orders the files and tells us whether a row arrived late
   batch_date_regex: 'batch_(\d{4}-\d{2}-\d{2})'
   batch_date_format: "%Y-%m-%d"
 
-# canonical field -> header in the source file (null / omitted = the source does not supply it)
+# canonical field -> header in the file (null = the bank doesn't send it)
 columns:
   account_number: account_number
   txn_date: txn_date
@@ -25,28 +23,25 @@ columns:
   account_type: account_type
 
 formats:
-  # Day-first. Tried in order, so never list a day-first and a month-first format with the same separator.
-  # Batch 1 uses 01-08-2026 and batch 2 uses 1/08/2026 for the same day.
+  # tried in order; batch 1 writes 01-08-2026 and batch 2 writes 1/08/2026 for the same day.
+  # Don't list a day-first and a month-first format for the same separator.
   date: ["%d-%m-%Y", "%d/%m/%Y"]
-  time: ["%H:%M:%S", "%H:%M"]      # accepts 09:05:00 and 9:05:00
-  decimal_places: 2                 # more precision than this is rejected, never silently rounded
+  time: ["%H:%M:%S", "%H:%M"]
+  decimal_places: 2          # more than this is rejected, never rounded
   decimal_separator: "."
   thousands_separator: null
-  min_year: 2000
-  max_year: 2100
 
 validation:
-  # A blank value in one of these fields quarantines the row as MISSING_<FIELD>.
+  # blank in one of these fields -> quarantined as MISSING_<FIELD>
   required: [account_number, ref_no]
 
 dedup:
-  # Identity of a transaction after normalisation. Different ref, time or amount means a different
-  # transaction (so legitimate repeats survive); a re-delivered row matches on every field.
-  # balance, description and account_type are deliberately NOT part of the key: balance is a running
-  # snapshot that is restated when a backfill lands, description is free text and account_type drifts
-  # between deliveries for the same account.
+  # What makes two rows the same transaction, after normalising. Different ref, time or amount means
+  # a different transaction, so legitimate repeats survive.
+  # Left out on purpose: balance (restated when a backfill lands), description (free text) and
+  # account_type (changes between files for the same account).
   key: [account_number, txn_date, txn_time, ref_no, direction, amount]
 
 backfill:
-  # A new row whose txn_date is at least this many days older than its file's batch date is a backfill.
+  # a new row whose date is at least this many days older than its file's batch date is a backfill
   late_after_days: 1
