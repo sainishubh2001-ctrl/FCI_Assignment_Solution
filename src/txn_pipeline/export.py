@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
 from .config import SourceConfig
+from .reconcile import build_report, render_markdown
 from .store import Store
 
 
@@ -24,11 +27,15 @@ def write_if_changed(path: Path, text: str) -> bool:
     return True
 
 
-def write_dataset_outputs(store: Store, cfg: SourceConfig, output_dir: Path) -> dict[str, bool]:
+def write_outputs(store: Store, cfg: SourceConfig, output_dir: Path) -> tuple[dict[str, Any], dict[str, bool]]:
+    """Publish the datasets and the reconciliation summary; returns the report and which files changed."""
     output_dir.mkdir(parents=True, exist_ok=True)
-    datasets = {
-        "canonical_transactions.csv": store.canonical(cfg.name),
-        "quarantine.csv": store.quarantined(cfg.name),
-        "duplicates_removed.csv": store.duplicates_removed(cfg.name),
+    report = build_report(store, cfg)
+    documents = {
+        "canonical_transactions.csv": csv_text(store.canonical(cfg.name)),
+        "quarantine.csv": csv_text(store.quarantined(cfg.name)),
+        "duplicates_removed.csv": csv_text(store.duplicates_removed(cfg.name)),
+        "reconciliation_summary.json": json.dumps(report, indent=2, ensure_ascii=False) + "\n",
+        "reconciliation_summary.md": render_markdown(report),
     }
-    return {name: write_if_changed(output_dir / name, csv_text(frame)) for name, frame in datasets.items()}
+    return report, {name: write_if_changed(output_dir / name, text) for name, text in documents.items()}

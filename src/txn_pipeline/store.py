@@ -144,7 +144,7 @@ class Store:
         self.conn.execute("PRAGMA foreign_keys = ON")
         self.conn.executescript(SCHEMA)
 
-    def __enter__(self) -> "Store":
+    def __enter__(self) -> Store:
         return self
 
     def __exit__(self, *exc: object) -> None:
@@ -181,6 +181,28 @@ class Store:
             query = f"SELECT txn_id FROM transactions WHERE txn_id IN ({marks})"
             found.update(row[0] for row in self.conn.execute(query, chunk))
         return found
+
+    def partition_totals(self, source: str, txn_dates: Sequence[str]) -> dict[str, dict[str, Any]]:
+        """Row count and exact debit/credit totals per business date."""
+        totals = {d: {"rows": 0, "debit": Decimal(0), "credit": Decimal(0)} for d in txn_dates}
+        for start in range(0, len(txn_dates), _CHUNK):
+            chunk = list(txn_dates[start : start + _CHUNK])
+            marks = ",".join("?" * len(chunk))
+            query = f"SELECT txn_date, direction, amount FROM transactions WHERE source = ? AND txn_date IN ({marks})"
+            for txn_date, direction, amount in self.conn.execute(query, [source, *chunk]):
+                bucket = totals[txn_date]
+                bucket["rows"] += 1
+                bucket["debit" if direction == "DEBIT" else "credit"] += Decimal(amount)
+        return totals
+
+    def batch_table_counts(self, source: str) -> dict[str, dict[str, int]]:
+        """Rows physically present per batch in each table, independent of the ledger's own counters."""
+        counts: dict[str, dict[str, int]] = {}
+        for table, label in (("transactions", "loaded"), ("quarantine", "quarantined"), ("duplicates", "duplicates")):
+            query = f"SELECT batch_sha256, COUNT(*) FROM {table} WHERE source = ? GROUP BY batch_sha256"
+            for sha, number in self.conn.execute(query, (source,)):
+                counts.setdefault(sha, {"loaded": 0, "quarantined": 0, "duplicates": 0})[label] = number
+        return counts
 
     def insert_transactions(self, frame: pd.DataFrame) -> None:
         self._insert("transactions", TRANSACTION_COLUMNS, frame)

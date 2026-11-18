@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
+from decimal import Decimal
 from pathlib import Path
 
 from .config import ConfigError, load_config
@@ -49,9 +51,32 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     result = run(cfg, Path(args.input), Path(args.output), Path(args.state), reset=args.reset)
+    for line in summary_lines(result.report, Path(args.output)):
+        print(line)
     for outcome in result.failed:
         print(f"FAILED {outcome.name}: {outcome.message}", file=sys.stderr)
-    return 1 if result.failed else 0
+    if not result.report["all_checks_passed"]:
+        failed = [c["name"] for c in result.report["control_checks"] if not c["passed"]]
+        print(f"RECONCILIATION FAILED: {failed}", file=sys.stderr)
+    return 0 if result.ok else 1
+
+
+def summary_lines(report: dict, output: Path) -> list[str]:
+    t = report["totals"]
+    lines = [
+        "",
+        f"Reconciliation: {t['rows_read']} read = {t['rows_loaded']} loaded + {t['rows_quarantined']} quarantined "
+        f"+ {t['duplicates_removed']} duplicates removed "
+        f"({'all control checks passed' if report['all_checks_passed'] else 'CONTROL CHECK FAILURE'})",
+    ]
+    for b in report["backfill"]:
+        dates = ", ".join(p["txn_date"] for p in b["partitions"])
+        lines.append(
+            f"Backfill: {b['file']} added {b['rows']} rows to {dates} "
+            f"(credits {format(Decimal(b['credit_total']), '+,f')}, debits {format(Decimal(b['debit_total']), '+,f')})"
+        )
+    lines.append(f"Outputs in {output}{os.sep}: canonical_transactions.csv, quarantine.csv, duplicates_removed.csv, reconciliation_summary.json/.md")
+    return lines
 
 
 if __name__ == "__main__":
